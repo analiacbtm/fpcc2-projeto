@@ -1,0 +1,1583 @@
+---
+title: "Projeto de reprodução"
+author: 'Aluna: Anália Cristina B. T. Meira'
+output:
+  html_document: 
+    encoding: UTF-8
+  pdf_document: default
+---
+
+```{r setup, include=FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidyr)
+library(readr)
+library(knitr)
+library(dplyr)
+library(kableExtra)
+library(ggplot2)
+library(htmltools)
+
+solution = read.csv(file="E:\\FPCC2\\fpcc2-projeto\\data\\novoSolution.csv")
+```
+
+### Identificação das soluções por exercício quanto a concordância ou discordância.
+
+```{r, echo=FALSE, warning = FALSE}
+
+total_solucao_exercicio <- solution %>%
+  group_by(problem_id) %>%
+  summarise(total = n())
+
+#Filtrar por aprovação em todos os 4 casos de testes
+#Agrupar por exercício para obter as concordâncias e discordâncias.
+exerc_concordancia <- solution %>% 
+  filter((old_outcome == 1 & input_outcome == "True" & graph_outcome == "True" & mutation_outcome == "True") | 
+        (old_outcome == 0 & input_outcome == "False" & graph_outcome == "False" & mutation_outcome == "False")) %>%
+  group_by(problem_id) %>%
+  summarise(concordancias = n())
+
+concordancia_discordancia <- left_join(total_solucao_exercicio, exerc_concordancia, by = "problem_id") %>%
+  mutate(discordancia = total - concordancias) %>%
+  mutate(prop_disc = discordancia/total*100) %>%
+  mutate(prop_conc = concordancias/total*100)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Para não termos gráficos com 70 informações separamos para melhor visualização por exercícios gerando 3 gráficos
+
+p <- concordancia_discordancia %>%
+  filter(problem_id < 812) %>%
+  ggplot(aes(x = factor(problem_id), y = prop_conc, fill = "Concordâncias", label = glue::glue("{round(prop_conc, 2)}%", prop_conc = prop_conc),group = prop_conc)) +
+  geom_bar(stat = "identity", position = position_nudge(x = -.05), width = .3) +
+  geom_text(aes(label = glue::glue("{round(prop_conc, 2)}%", prop_conc = prop_conc), 
+                y = prop_conc + 0.03), position = position_nudge(x = -0.04), size = 3.2) +
+  geom_bar(aes(x = factor(problem_id), y = prop_disc, fill = "Discordância",
+               label1 = glue::glue("{round(prop_disc, 2)}%", prop_disc = prop_disc),group = prop_disc),
+               stat = "identity", position = position_nudge(x = 0.25), width = .3) +
+  geom_text(aes(label = glue::glue("{round(prop_disc, 2)}%", prop_disc = prop_disc), 
+                y = prop_disc + 0.03), position = position_nudge(x = .25), size = 3.2) +
+  scale_fill_manual(name = "", values = c("Concordâncias" = "lightblue", "Discordância" = "orange"),
+                    guide = guide_legend(keywidth = 0.7, keyheight = 0.7, label.position = "right", title.position =   "top", title.hjust = 0.5)) +
+  theme_bw() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Números dos exercícios",
+    y = "Proporção (%)"
+  )
+print(p)
+ggsave("grafico_de_barras.jpg", plot = p, width = 5.5, height = 3.7, units = "in", dpi = 300)
+```
+
+```{r, echo=FALSE, warning = FALSE, warning = FALSE}
+#Para não termos gráficos com 70 informações separamos para melhor visualização por exercícios gerando 4 gráficos
+
+p <- concordancia_discordancia %>%
+  filter(problem_id > 804 & problem_id < 829) %>%
+  ggplot(aes(x = factor(problem_id), y = prop_conc, fill = "Concordâncias", label = glue::glue("{round(prop_conc, 2)}%", prop_conc = prop_conc),group = prop_conc)) +
+  geom_bar(stat = "identity", position = position_nudge(x = -.05), width = .3) +
+  geom_text(aes(label = glue::glue("{round(prop_conc, 2)}%", prop_conc = prop_conc), 
+                y = prop_conc + 0.03), position = position_nudge(x = -0.04), size = 3.2) +
+  geom_bar(aes(x = factor(problem_id), y = prop_disc, fill = "Discordância",
+               label1 = glue::glue("{round(prop_disc, 2)}%", prop_disc = prop_disc),group = prop_disc),
+               stat = "identity", position = position_nudge(x = 0.25), width = .3) +
+  geom_text(aes(label = glue::glue("{round(prop_disc, 2)}%", prop_disc = prop_disc), 
+                y = prop_disc + 0.03), position = position_nudge(x = .25), size = 3.2) +
+  scale_fill_manual(name = "", values = c("Concordâncias" = "lightblue", "Discordância" = "orange"),
+                    guide = guide_legend(keywidth = 0.7, keyheight = 0.7, label.position = "right", title.position =   "top", title.hjust = 0.5)) +
+  theme_bw() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Números dos exercícios",
+    y = "Proporção (%)"
+  )
+print(p)
+ggsave("grafico_de_barras1.jpg", plot = p, width = 5.5, height = 3.7, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Para não termos gráficos com 70 informações separamos para melhor visualização por exercícios gerando 4 gráficos
+
+p <- concordancia_discordancia %>%
+  filter(problem_id > 828) %>%
+  ggplot(aes(x = factor(problem_id), y = prop_conc, fill = "Concordâncias", label = glue::glue("{round(prop_conc, 2)}%", prop_conc = prop_conc),group = prop_conc)) +
+  geom_bar(stat = "identity", position = position_nudge(x = -.05), width = .3) +
+  geom_text(aes(label = glue::glue("{round(prop_conc, 2)}%", prop_conc = prop_conc), 
+                y = prop_conc + 0.03), position = position_nudge(x = -0.04), size = 3.2) +
+  geom_bar(aes(x = factor(problem_id), y = prop_disc, fill = "Discordância",
+               label1 = glue::glue("{round(prop_disc, 2)}%", prop_disc = prop_disc),group = prop_disc),
+               stat = "identity", position = position_nudge(x = 0.25), width = .3) +
+  geom_text(aes(label = glue::glue("{round(prop_disc, 2)}%", prop_disc = prop_disc), 
+                y = prop_disc + 0.03), position = position_nudge(x = .25), size = 3.2) +
+  scale_fill_manual(name = "", values = c("Concordâncias" = "lightblue", "Discordância" = "orange"),
+                    guide = guide_legend(keywidth = 0.7, keyheight = 0.7, label.position = "right", title.position =   "top", title.hjust = 0.5)) +
+  theme_bw() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Números dos exercícios",
+    y = "Proporção (%)"
+  )
+print(p)
+ggsave("grafico_de_barras2.jpg", plot = p, width = 5.5, height = 3.7, units = "in", dpi = 300)
+
+```
+
+### Gerar média e mediana das concordâncias e discordâncias
+
+```{r, echo=FALSE, warning = FALSE}
+
+media_mediana_concordancias <- concordancia_discordancia %>% 
+  summarise(Media_concordancia = mean(prop_conc),
+            Media_discordancia = mean(prop_disc),
+            Mediana_concordancia = median(prop_conc),
+            Mediana_discordancia = median(prop_disc)) %>%
+              mutate(Diferenca_concordancia = Media_concordancia - Mediana_concordancia)%>% 
+              mutate(Diferenca_discordancia = Media_discordancia - Mediana_discordancia)
+
+kable(media_mediana_concordancias, col.names = c("Média Concordância", "Média Discordância", "Mediana ConcordÂncia", "Mediana Discordância", "Diferença Concordância", "Diferença Discordância")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover"))
+```
+
+```{r, echo=FALSE, warning = FALSE}
+
+media_mediana_concordancias1 <- media_mediana_concordancias %>%
+  pivot_longer(
+    cols = Media_concordancia:Media_discordancia, # as colunas desse intervalo
+    names_to = "Situacao", # terão seus nomes armazenados nessa nova coluna
+    names_prefix = "Media_", # pegar apenas os nomes que vem depois de 'ano_'
+    values_to = "Media") # e os seus valores armazenados nessa nova coluna
+media_mediana_concordancias2 <- media_mediana_concordancias %>%
+  pivot_longer(
+    cols = Mediana_concordancia:Mediana_discordancia, # as colunas desse intervalo
+    names_to = "Situacao", # terão seus nomes armazenados nessa nova coluna
+    names_prefix = "Mediana_", # pegar apenas os nomes que vem depois de 'ano_'
+    values_to = "Mediana") # e os seus valores armazenados nessa nova coluna
+concordancia_discordancia_media <- left_join(
+  media_mediana_concordancias1, media_mediana_concordancias2, by = "Situacao")
+
+concordancia_discordancia_media <- concordancia_discordancia_media[, c("Situacao", "Media", "Mediana")]
+  
+```
+
+### Gráficos da diferença entre média e mediana
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+concordancia_discordancia_media %>%
+  ggplot(aes(x = factor(Situacao), y = Media, fill = "Media", label = glue::glue("{round(Media, 2)}%", Media = Media),group = Media)) +
+  geom_bar(stat = "identity", position = position_nudge(x = -.05), width = .3) +
+  geom_text(aes(label = glue::glue("{round(Media, 2)}%", Media = Media),
+                y = Media + 0.03), position = position_nudge(x = -0.04), size = 3.2) +
+  geom_bar(aes(x = factor(Situacao), y = Mediana, fill = "Mediana",
+               label1 = glue::glue("{round(Mediana, 2)}%", Mediana = Mediana),group = Mediana),
+               stat = "identity", position = position_nudge(x = 0.25), width = .3) +
+  geom_text(aes(label = glue::glue("{round(Mediana, 2)}%", Mediana = Mediana),
+                y = Mediana + 0.03), position = position_nudge(x = .25), size = 3.2) +
+  scale_fill_manual(name = "", values = c("Media" = "lightblue", "Mediana" = "orange"),
+                    guide = guide_legend(keywidth = 0.7, keyheight = 0.7, label.position = "right", title.position =   "top", title.hjust = 0.5)) +
+  theme_bw() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Números dos exercícios",
+    y = "Proporção (%)",
+    title = "Porcentagem de concordâncias por exercícios"
+  )
+```
+
+
+### Total de defeitos inéditos por critérios
+
+```{r, echo=FALSE, warning = FALSE}
+solution_input <- solution %>%
+  filter(input_outcome == "False" & old_outcome == 1) %>%
+  summarise(total_input = n()) 
+solution_graph <- solution %>%
+  filter(graph_outcome == "False" & old_outcome == 1) %>%
+  summarise(total_graph = n()) 
+solution_mutation <- solution %>%
+  filter(mutation_outcome == "False" & old_outcome == 1) %>%
+  summarise(total_mutation = n())
+
+solution_input_graph_mut <- data.frame(
+  total_input = solution_input$total_input,
+  total_graph = solution_graph$total_graph,
+  total_mutation = solution_mutation$total_mutation)
+
+# Criando a tabela com kable e adicionando o cabeçalho
+kable(solution_input_graph_mut, col.names = c("Total Input", "Total Graph", "Total Mutation")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover")) %>%
+  add_header_above(c("Total de defeitos inéditos por critério" = 3))
+
+```
+
+### Total de defeitos não identificados pelos testes novos.
+
+Para obter esse resultado devo filtrar a tabela pelo campo dos testes originais = False e os campos dos testes de particionamento de entrada, de grafo e de mutação sejam True (representado que Passou no teste)
+
+```{r, echo=FALSE, warning = FALSE}
+solution_defeitos_nao_id <- solution %>%
+  filter(input_outcome == "True" & graph_outcome == "True" & mutation_outcome == "True" & old_outcome == 0) %>%
+  summarise(total_defeitos_nao_id = n()) 
+solution_defeitos_ineditos <- solution %>%
+  filter((input_outcome == "False" | graph_outcome == "False" | mutation_outcome == "False") & old_outcome == 1) %>%
+  summarise(total_defeitos_ineditos = n()) 
+
+solution_defeitos_NID_ineditos <- data.frame(
+  total_defeitos_NID = solution_defeitos_nao_id$total_defeitos_nao_id,
+  total_defeitos_ineditos = solution_defeitos_ineditos$total_defeitos_ineditos)
+
+# Criando a tabela com kable e adicionando o cabeçalho
+kable(solution_defeitos_NID_ineditos, col.names = c("Total de defeitos não identificados pelos testes novos", "Total de defeitos inéditos")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover")) 
+
+```
+
+### Média das porcentagens de soluções com defeito inédito
+
+```{r, echo=FALSE, warning = FALSE}
+#Calculo do total de defeitos ineditos
+solution_defeitos_ineditos <- solution %>%
+  filter((input_outcome == "False" | graph_outcome == "False" | mutation_outcome == "False") & old_outcome == 1) %>%
+  summarise(total_defeitos_ineditos = n())
+#Calculo do total de exercícios
+ total_solucao_exercicio <- solution %>%
+  summarise(total_solucoes = n())
+
+Media_defeitos_ineditos <- data.frame(
+  Media_def_ineditos = solution_defeitos_ineditos$total_defeitos_ineditos/total_solucao_exercicio$total_solucoes*100)
+
+kable(Media_defeitos_ineditos, col.names = c("Média Defeitos Inéditos")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover"))
+```
+  
+### Calculando a diferença das médias de defeitos encontrados entre os testes originais e os demais critérios de testes
+
+```{r, echo=FALSE, warning = FALSE}
+#Total de defeito por cada criterio e pelos testes originais
+solution_input <- solution %>%
+  filter(input_outcome == "False") %>%
+  group_by(problem_id) %>%
+  summarise(total_input_F = n()) 
+solution_graph <- solution %>%
+  filter(graph_outcome == "False") %>%
+  group_by(problem_id) %>%
+  summarise(total_graph_F = n()) 
+solution_mutation <- solution %>%
+  filter(mutation_outcome == "False") %>%
+  group_by(problem_id) %>%
+  summarise(total_mutation_F = n())
+solution_old <- solution %>%
+  filter(old_outcome == 0) %>%
+  group_by(problem_id) %>%
+  summarise(total_old_F = n())
+Total_Solution_defeitos<- solution %>%
+  filter(old_outcome == 0 | input_outcome == "False" | graph_outcome == "False" | mutation_outcome == "False") %>%
+  group_by(problem_id) %>%
+  summarise(total_solution_def = n())
+
+defeitos <- solution_input %>%
+  left_join(solution_graph, by = "problem_id") %>%
+  left_join(solution_mutation, by = "problem_id") %>%
+  left_join(solution_old, by = "problem_id")%>%
+  left_join(Total_Solution_defeitos, by = "problem_id")
+```
+
+Examinando essa relação entre os testes originais e os testes de particionamento de entrada
+
+```{r, echo=FALSE, warning = FALSE}
+p1 <- ggplot(data = defeitos, aes(x = total_old_F, y = total_input_F, color = total_solution_def)) +
+  geom_point(aes(size = total_solution_def, group = problem_id)) +
+  scale_color_gradient(low = "blue", high = "red") +
+  scale_size_continuous(range = c(2,10)) +
+  labs(x = "Total de casos com defeito nos testes originais", y = "Total de casos com defeito nos testes de particionamento", color = "Total solução com defeitos", size = "Total solução com defeitos") +
+  theme_minimal()
+print(p1)
+ggsave("correlacao_old_input.png", plot = p1, width = 6, height = 4, units = "in", dpi = 300)
+
+```
+
+#### Calcular correlações do Total de casos com defeito nos testes originais X Total de casos com defeito nos testes de particionamento
+
+```{r, echo=FALSE, warning = FALSE}
+
+corr_pearson <- cor.test(defeitos$total_old_F, defeitos$total_input_F, method = "pearson")$estimate
+corr_kendall <- cor.test(defeitos$total_old_F, defeitos$total_input_F, method = "kendall")$estimate
+corr_spearman <- cor.test(defeitos$total_old_F, defeitos$total_input_F, method = "spearman", exact = FALSE)$estimate
+
+corr_table <- data.frame(
+  "Cor Pearson" = corr_pearson,
+  "Cor Kendall" = corr_kendall,
+  "Cor Spearman" = corr_spearman
+)  
+
+kable(corr_table, col.names = c("Corr_Pearson", "Corr_Kendall", "Corr_Spearman")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover"))
+```
+
+### Examinando essa relação entre os testes originais e os testes de grafos
+
+```{r, echo=FALSE, warning = FALSE}
+p1 <- ggplot(data = defeitos, aes(x = total_old_F, y = total_graph_F, color = total_solution_def)) +
+  geom_point(aes(size = total_solution_def, group = problem_id)) +
+  scale_color_gradient(low = "blue", high = "red") +
+  scale_size_continuous(range = c(2,10)) +
+  labs(x = "Total de casos com defeito nos testes originais", y = "Total de casos com defeito nos testes de grafo", color = "Total solução com defeitos", size = "Total solução com defeitos") +
+  theme_minimal()
+print(p1)
+ggsave("correlacao_old_input.png", plot = p1, width = 6, height = 4, units = "in", dpi = 300)
+
+```
+
+#### Calcular correlações do Total de casos com defeito nos testes originais X Total de casos com defeito nos testes de particionamento
+
+```{r, echo=FALSE, warning = FALSE}
+
+corr_pearson <- cor.test(defeitos$total_old_F, defeitos$total_graph_F, method = "pearson")$estimate
+corr_kendall <- cor.test(defeitos$total_old_F, defeitos$total_graph_F, method = "kendall")$estimate
+corr_spearman <- cor.test(defeitos$total_old_F, defeitos$total_graph_F, method = "spearman", exact = FALSE)$estimate
+
+corr_table <- data.frame(
+  "Cor Pearson" = corr_pearson,
+  "Cor Kendall" = corr_kendall,
+  "Cor Spearman" = corr_spearman
+)  
+
+kable(corr_table, col.names = c("Corr_Pearson", "Corr_Kendall", "Corr_Spearman")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover"))
+```
+
+### Examinando essa relação entre os testes originais e os testes de mutação
+
+```{r, echo=FALSE, warning = FALSE}
+p1 <- ggplot(data = defeitos, aes(x = total_old_F, y = total_mutation_F, color = total_solution_def)) +
+  geom_point(aes(size = total_solution_def, group = problem_id)) +
+  scale_color_gradient(low = "blue", high = "red") +
+  scale_size_continuous(range = c(2,10)) +
+  labs(x = "Total de casos com defeito nos testes originais", y = "Total de casos com defeito nos testes de mutação", color = "Total solução com defeitos", size = "Total solução com defeitos") +
+  theme_minimal()
+print(p1)
+ggsave("correlacao_old_input.png", plot = p1, width = 6, height = 4, units = "in", dpi = 300)
+
+```
+
+#### Calcular correlações do Total de casos com defeito nos testes originais X Total de casos com defeito nos testes de particionamento
+
+```{r, echo=FALSE, warning = FALSE}
+
+corr_pearson <- cor.test(defeitos$total_old_F, defeitos$total_mutation_F, method = "pearson")$estimate
+corr_kendall <- cor.test(defeitos$total_old_F, defeitos$total_mutation_F, method = "kendall")$estimate
+corr_spearman <- cor.test(defeitos$total_old_F, defeitos$total_mutation_F, method = "spearman", exact = FALSE)$estimate
+
+corr_table <- data.frame(
+  "Cor Pearson" = corr_pearson,
+  "Cor Kendall" = corr_kendall,
+  "Cor Spearman" = corr_spearman
+)  
+
+kable(corr_table, col.names = c("Corr_Pearson", "Corr_Kendall", "Corr_Spearman")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("hover"))
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="736"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para cada um dos exercícios assim como no tranalho original.
+### Heatmap do exercício 736
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `736`), color = "white") +
+  geom_text(aes(label = paste0(round((`736` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 736") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_736.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="742"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 742
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `742`), color = "white") +
+  geom_text(aes(label = paste0(round((`742` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 742") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_742.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="744"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 744
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `744`), color = "white") +
+  geom_text(aes(label = paste0(round((`744` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 744") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_744.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="751"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 751
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `751`), color = "white") +
+  geom_text(aes(label = paste0(round((`751` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 751") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_751.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="798"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 798
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `798`), color = "white") +
+  geom_text(aes(label = paste0(round((`798` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 798") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_798.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="800"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 800
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `800`), color = "white") +
+  geom_text(aes(label = paste0(round((`800` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 800") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_800.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+
+coluna ="804"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar o heatmap para o exercício 804
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `804`), color = "white") +
+  geom_text(aes(label = paste0(round((`804` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 804") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_804.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="806"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 806
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `806`), color = "white") +
+  geom_text(aes(label = paste0(round((`806` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 806") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_806.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="807"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 807
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `807`), color = "white") +
+  geom_text(aes(label = paste0(round((`807` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 807") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_807.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="809"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 809
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `809`), color = "white") +
+  geom_text(aes(label = paste0(round((`809` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 809") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_809.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="810"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 810
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `810`), color = "white") +
+  geom_text(aes(label = paste0(round((`810` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 810") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_810.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="811"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 811
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `811`), color = "white") +
+  geom_text(aes(label = paste0(round((`811` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 811") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_811.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="812"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 812
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `812`), color = "white") +
+  geom_text(aes(label = paste0(round((`812` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 812") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_812.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="815"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 815
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `815`), color = "white") +
+  geom_text(aes(label = paste0(round((`815` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 815") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_815.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="816"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 816
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `816`), color = "white") +
+  geom_text(aes(label = paste0(round((`816` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 816") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_816.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="817"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 817
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `817`), color = "white") +
+  geom_text(aes(label = paste0(round((`817` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 817") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_817.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="819"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 819
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `819`), color = "white") +
+  geom_text(aes(label = paste0(round((`819` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 819") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_819.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="820"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 820
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `820`), color = "white") +
+  geom_text(aes(label = paste0(round((`820` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 820") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_820.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="821"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 821
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `821`), color = "white") +
+  geom_text(aes(label = paste0(round((`821` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 821") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_821.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="822"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 822
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `822`), color = "white") +
+  geom_text(aes(label = paste0(round((`822` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 822") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_822.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="823"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 823
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `823`), color = "white") +
+  geom_text(aes(label = paste0(round((`823` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 823") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_823.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="824"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 824
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `824`), color = "white") +
+  geom_text(aes(label = paste0(round((`824` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 824") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_824.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="827"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 827
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `827`), color = "white") +
+  geom_text(aes(label = paste0(round((`827` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 827") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_827.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="828"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 828
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `828`), color = "white") +
+  geom_text(aes(label = paste0(round((`828` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 828") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_828.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="829"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 829
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `829`), color = "white") +
+  geom_text(aes(label = paste0(round((`829` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 829") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_829.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="831"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 831
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `831`), color = "white") +
+  geom_text(aes(label = paste0(round((`831` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 831") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_831.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="832"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 832
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `832`), color = "white") +
+  geom_text(aes(label = paste0(round((`832` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 832") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_832.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="833"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 833
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `833`), color = "white") +
+  geom_text(aes(label = paste0(round((`833` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 833") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_833.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="834"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 834
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `834`), color = "white") +
+  geom_text(aes(label = paste0(round((`834` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 834") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_834.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="835"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 835
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `835`), color = "white") +
+  geom_text(aes(label = paste0(round((`835` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 835") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_835.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="836"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 836
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `836`), color = "white") +
+  geom_text(aes(label = paste0(round((`836` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 836") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_836.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="838"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 838
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `838`), color = "white") +
+  geom_text(aes(label = paste0(round((`838` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 838") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_838.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="839"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 839
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `839`), color = "white") +
+  geom_text(aes(label = paste0(round((`839` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 839") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_839.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="840"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 840
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `840`), color = "white") +
+  geom_text(aes(label = paste0(round((`840` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 840") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_840.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+#Gerar os mapas de calor
+
+coluna ="842"
+
+solution_heatmap <- solution %>%
+  group_by(problem_id, old_outcome, input_outcome, graph_outcome, mutation_outcome) %>%
+  summarise(total = n(), .groups = "drop")  %>%
+  spread(problem_id, total)
+solution_heatmap[is.na(solution_heatmap)] <- 0
+solution_heatmap <- solution_heatmap %>% as_tibble()
+solution_heatmap["Resultado_criterios"]<-c("FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP","FFF","FFP","FPF","FPP","PFF","PFP","PPF","PPP")
+solution_heatmap <- solution_heatmap[, c("Resultado_criterios", "old_outcome", coluna)]
+soma <- sum(solution_heatmap[[coluna]])
+
+```
+
+### Gerar heatmap para o exercício 842
+
+```{r, echo=FALSE, warning = FALSE}
+
+p1 <- ggplot(solution_heatmap, aes(x = Resultado_criterios, y = factor(old_outcome))) +
+  geom_tile(aes(fill = `842`), color = "white") +
+  geom_text(aes(label = paste0(round((`842` / soma) * 100, 2), "%")), color = "black", size = 3) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Exercício nr 842") +
+  scale_y_discrete(labels = c("0" = "F", "1" = "T")) +
+  labs(x = "Resultado dos 3 Critérios de testes", y = "Testes originais", title = "Mapa de Calor") +
+  theme_minimal() +
+  coord_equal(ratio = 1)
+print(p1)
+ggsave("mapa_de_calor_842.png", plot = p1, width = 6, height = 2, units = "in", dpi = 300)
+
+```
+
+```{r, echo=FALSE, warning = FALSE}
+rm(list=ls())
+```
